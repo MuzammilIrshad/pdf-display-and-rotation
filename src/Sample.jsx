@@ -29,6 +29,7 @@ export default function Sample() {
   const [containerWidth, setContainerWidth] = useState();
   const [pdfFileData, setPdfFileData] = useState();
  const [arrayBuffer, setArrayBuffer] = useState()
+ const [pagesRotated, setPagesRotated] = useState([])
   function readFileAsync(file) {
     return new Promise((resolve, reject) => {
       let reader = new FileReader();
@@ -48,14 +49,15 @@ export default function Sample() {
     setPdfFileData(docUrl);
   }
 
-  async function extractPdfPage(arrayBuff, index=-1) {
+  async function extractPdfPage(arrayBuff, indexes=[]) {
     const pdfSrcDoc = await PDFDocument.load(arrayBuff);
     console.log(pdfSrcDoc)
     const pdfNewDoc = await PDFDocument.create();
     for (let i = 0; i < pdfSrcDoc.getPageCount(); i++) {
+      const pageNumber = indexes.filter((item)=>item === i)
       const [copiedPage] = await pdfNewDoc.copyPages(pdfSrcDoc, [i]);
-      if(index > -1 && index === i){
-        console.log(index, i)
+      if(indexes.length > 0 && pageNumber[0] === i){
+        console.log(pageNumber, i)
         copiedPage.setRotation(degrees(90))
         pdfNewDoc.addPage(copiedPage);
       }else{
@@ -82,9 +84,7 @@ export default function Sample() {
       setContainerWidth(entry.contentRect.width);
     }
   }, []);
-
   useResizeObserver(containerRef, resizeObserverOptions, onResize);
-
   function onFileChange(event) {
     const { files } = event.target;
 
@@ -102,7 +102,9 @@ export default function Sample() {
   }
 async function handleRotation (index){
   console.log(index)
-  const newPdfDoc = await extractPdfPage(arrayBuffer, index);
+  const numOfPagesRotated = [...pagesRotated, index]
+  setPagesRotated(numOfPagesRotated)
+  const newPdfDoc = await extractPdfPage(arrayBuffer, numOfPagesRotated);
   renderPdf(newPdfDoc);
   let array = [...isRotated];
   array[index] = !isRotated[index]
