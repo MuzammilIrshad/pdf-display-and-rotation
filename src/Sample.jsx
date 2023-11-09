@@ -3,7 +3,6 @@ import { pdfjs, Document, Page } from 'react-pdf';
 import 'react-pdf/dist/esm/Page/AnnotationLayer.css';
 import 'react-pdf/dist/esm/Page/TextLayer.css';
 import { Grid } from '@mui/material';
-import { PDFDocument, degrees } from 'pdf-lib';
 import {ExtractPdfPages, RotatePdfPage} from '@muzammil931/pdf-pages-rotation'
 pdfjs.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.js`;
 // pdfjs.GlobalWorkerOptions.workerSrc = new URL('pdfjs-dist/build/pdf.worker.min.js', import.meta.url).toString();
@@ -16,10 +15,10 @@ const options = {
 const maxWidth = 200;
 
 
-export default function Sample() {
+export default function PdfPageRotationAndDownload() {
   const [file, setFile] = useState('./sample.pdf');
   const [event, setEvent] = useState('')
-  const [numPages, setNumPages] = useState();
+  const [numOfPages, setNumOfPages] = useState();
   const [isRotated, setIsRotated] = useState([])
   const [pdfFileData, setPdfFileData] = useState();
 
@@ -37,7 +36,7 @@ export default function Sample() {
   function onDocumentLoadSuccess({ numPages: nextNumPages }) {
     const myArray = new Array(nextNumPages).fill(false);
      setIsRotated(myArray);
-    setNumPages(nextNumPages);
+    setNumOfPages(nextNumPages);
     console.log(nextNumPages);
   }
 async function handleRotation (index){
@@ -82,7 +81,7 @@ async function handleRotation (index){
         <div>
           <Document file={file} onLoadSuccess={onDocumentLoadSuccess} options={options}>
           <Grid container spacing={2}>
-            {Array.from(new Array(numPages), (el, index) => (
+            {Array.from(new Array(numOfPages), (el, index) => (
               <Grid item xs={8}  md={4} key={`page_${index + 1}`}>
                 <div 
                 style={{height:"auto", 
