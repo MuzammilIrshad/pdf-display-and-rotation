@@ -3,14 +3,13 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
-  "main": "src/index.jsx",
   "scripts": {
     "build": "npm run copy && react-scripts build",
     "copy": "npm run copy-cmaps && npm run copy-standard-fonts && npm run copy-worker",
-    "copy-cmaps": "node --loader ts-node/esm ./scripts/copy-cmaps.js",
-    "copy-standard-fonts": "node --loader ts-node/esm ./scripts/copy-standard-fonts.js",
-    "copy-worker": "node --loader ts-node/esm ./scripts/copy-worker.js",
-    "dev": "npm run copy && react-scripts start",
+    "copy-cmaps": "node ./scripts/copy-cmaps.js",
+    "copy-standard-fonts": "node ./scripts/copy-standard-fonts.js",
+    "copy-worker": "node ./scripts/copy-worker.js",
+    "start": "npm run copy && react-scripts start",
     "eject": "react-scripts eject",
     "test": "react-scripts test"
   },
@@ -18,6 +17,7 @@
     "@emotion/react": "^11.11.1",
     "@emotion/styled": "^11.11.0",
     "@mui/material": "^5.14.15",
+    "@muzammil931/pdf-pages-rotation": "^1.0.1",
     "@wojtekmaj/react-hooks": "^1.18.0",
     "pdf-lib": "^1.17.1",
     "react": "^18.2.0",
@@ -26,16 +26,8 @@
     "react-scripts": "^5.0.0"
   },
   "devDependencies": {
-    "@types/node": "*",
-    "@types/react": "^18.2.15",
-    "@types/react-dom": "^18.2.7",
     "@vitejs/plugin-react": "^4.0.3",
-    "eslint": "^8.45.0",
-    "eslint-plugin-react": "^7.32.2",
-    "eslint-plugin-react-hooks": "^4.6.0",
-    "eslint-plugin-react-refresh": "^0.4.3",
     "ts-node": "^10.9.1",
-    "typescript": "^5.0.0",
     "vite": "^4.4.5"
   },
   "resolutions": {

@@ -4,7 +4,7 @@ import ReactDOM from 'react-dom/client'
 import './index.css'
 import Sample from './Sample';
 
-ReactDOM.createRoot(document.getElementById('react-root')).render(
+ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
     <Sample />
   </React.StrictMode>,

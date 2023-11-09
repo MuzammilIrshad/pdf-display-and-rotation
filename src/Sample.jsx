@@ -1,98 +1,38 @@
 import { useCallback, useState } from 'react';
-import { useResizeObserver } from '@wojtekmaj/react-hooks';
 import { pdfjs, Document, Page } from 'react-pdf';
 import 'react-pdf/dist/esm/Page/AnnotationLayer.css';
 import 'react-pdf/dist/esm/Page/TextLayer.css';
 import { Grid } from '@mui/material';
 import { PDFDocument, degrees } from 'pdf-lib';
-
-pdfjs.GlobalWorkerOptions.workerSrc = new URL(
-  'pdfjs-dist/build/pdf.worker.min.js',
-  import.meta.url,
-).toString();
-
+import {ExtractPdfPages, RotatePdfPage} from '@muzammil931/pdf-pages-rotation'
+pdfjs.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.js`;
+// pdfjs.GlobalWorkerOptions.workerSrc = new URL('pdfjs-dist/build/pdf.worker.min.js', import.meta.url).toString();
 const options = {
   cMapUrl: '/cmaps/',
   standardFontDataUrl: '/standard_fonts/',
 };
 
-const resizeObserverOptions = {};
 
 const maxWidth = 200;
 
 
 export default function Sample() {
   const [file, setFile] = useState('./sample.pdf');
+  const [event, setEvent] = useState('')
   const [numPages, setNumPages] = useState();
   const [isRotated, setIsRotated] = useState([])
-  const [containerRef, setContainerRef] = useState(null);
-  const [containerWidth, setContainerWidth] = useState();
   const [pdfFileData, setPdfFileData] = useState();
- const [arrayBuffer, setArrayBuffer] = useState()
- const [pagesRotated, setPagesRotated] = useState([])
-  function readFileAsync(file) {
-    return new Promise((resolve, reject) => {
-      let reader = new FileReader();
-      reader.onload = () => {
-        resolve(reader.result);
-      };
-      reader.onerror = reject;
-      reader.readAsArrayBuffer(file);
-    });
-  }
 
-  function renderPdf(uint8array) {
-    const tempblob = new Blob([uint8array], {
-      type: "application/pdf",
-    });
-    const docUrl = URL.createObjectURL(tempblob);
-    setPdfFileData(docUrl);
-  }
+  const [pagesRotated, setPagesRotated] = useState([])
 
-  async function extractPdfPage(arrayBuff, indexes=[]) {
-    const pdfSrcDoc = await PDFDocument.load(arrayBuff);
-    console.log(pdfSrcDoc)
-    const pdfNewDoc = await PDFDocument.create();
-    for (let i = 0; i < pdfSrcDoc.getPageCount(); i++) {
-      const pageNumber = indexes.filter((item)=>item === i)
-      const [copiedPage] = await pdfNewDoc.copyPages(pdfSrcDoc, [i]);
-      if(indexes.length > 0 && pageNumber[0] === i){
-        console.log(pageNumber, i)
-        copiedPage.setRotation(degrees(90))
-        pdfNewDoc.addPage(copiedPage);
-      }else{
-        pdfNewDoc.addPage(copiedPage);
-      }
-    }
-    const newpdf = await pdfNewDoc.save();
-    return newpdf;
-  }
-  const onFileSelected = async (e) => {
-    const fileList = e.target.files;
-    if (fileList?.length > 0) {
-      const pdfArrayBuffer = await readFileAsync(fileList[0]);
-      console.log(pdfArrayBuffer)
-      setArrayBuffer(pdfArrayBuffer)
-      const newPdfDoc = await extractPdfPage(pdfArrayBuffer);
-      renderPdf(newPdfDoc);
-    }
+
+  const onFileSelection = async (e) => {
+    const { files } = e.target;
+    setFile(files[0] || null);
+    setEvent(e)
+         const url = await ExtractPdfPages(e);
+         setPdfFileData(url);
   };
-  const onResize = useCallback((entries) => {
-    const [entry] = entries;
-
-    if (entry) {
-      setContainerWidth(entry.contentRect.width);
-    }
-  }, []);
-  useResizeObserver(containerRef, resizeObserverOptions, onResize);
-  function onFileChange(event) {
-    const { files } = event.target;
-
-    if (files && files[0]) {
-      setFile(files[0] || null);
-      onFileSelected(event)
-    }
-  }
 
   function onDocumentLoadSuccess({ numPages: nextNumPages }) {
     const myArray = new Array(nextNumPages).fill(false);
@@ -104,8 +44,8 @@ async function handleRotation (index){
   console.log(index)
   const numOfPagesRotated = [...pagesRotated, index]
   setPagesRotated(numOfPagesRotated)
-  const newPdfDoc = await extractPdfPage(arrayBuffer, numOfPagesRotated);
-  renderPdf(newPdfDoc);
+  const url = await RotatePdfPage(event, numOfPagesRotated);
+  setPdfFileData(url);
   let array = [...isRotated];
   array[index] = !isRotated[index]
   setIsRotated(array)
@@ -137,9 +77,9 @@ async function handleRotation (index){
       </header>
         <div className="Example__container__load">
           <label htmlFor="file">Load from file:</label>{' '}
-          <input onChange={onFileChange} type="file" />
+          <input onChange={onFileSelection} type="file" />
         </div>
-        <div ref={setContainerRef}>
+        <div>
           <Document file={file} onLoadSuccess={onDocumentLoadSuccess} options={options}>
           <Grid container spacing={2}>
             {Array.from(new Array(numPages), (el, index) => (
@@ -169,8 +109,6 @@ async function handleRotation (index){
         <div>
       <button onClick={downloadPdf}>Download PDF</button>
     </div>
-
-        {containerWidth}
         <iframe
         style={{ display: "block", width: "100%", height: "100%", border:"2px solid black" }}
         title="PdfFrame"
